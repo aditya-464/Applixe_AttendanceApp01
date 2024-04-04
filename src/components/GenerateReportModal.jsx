@@ -50,6 +50,10 @@ const GenerateReportModal = props => {
         .doc(id)
         .get();
 
+      if (attendanceDetails.exists) {
+        console.log(attendanceDetails.data());
+      }
+
       if (classDetails.exists && attendanceDetails.exists) {
         let tempArray = [];
         const totalDays = Object.keys(attendanceDetails.data()).length;
@@ -129,6 +133,82 @@ const GenerateReportModal = props => {
     }
   };
 
+  const isInRange = key => {
+    let str = key;
+    let dd = str.substring(0, 2);
+    let mm = str.substring(3, 5);
+    let yyyy = str.substring(6, 10);
+    str = yyyy + '-' + mm + '-' + dd;
+
+    let from = new Date('2023-01-01');
+    let to = new Date('2024-03-31');
+    let check = new Date(str);
+
+    return check >= from && check <= to;
+  };
+
+  const getCustomClassDetails = async () => {
+    try {
+      const classDetails = await firestore()
+        .collection('Classes')
+        .doc(id)
+        .get();
+
+      const attendanceDetails = await firestore()
+        .collection('Attendance')
+        .doc(id)
+        .get();
+
+      if (classDetails.exists && attendanceDetails.exists) {
+        let tempAttendance = [];
+        const studentDetails = classDetails.data().studentDetails;
+        for (let i = 0; i < studentDetails.length; i++) {
+          tempAttendance.push(0);
+        }
+
+        // Check for data in provided range
+        let totalDays = 0;
+        const attendanceDetailsData = attendanceDetails.data();
+        for (let key in attendanceDetailsData) {
+          if (attendanceDetailsData.hasOwnProperty(key)) {
+            if (isInRange(key)) {
+              ++totalDays;
+              for (let i = 0; i < studentDetails.length; i++) {
+                tempAttendance[i] += attendanceDetailsData[key];
+              }
+            }
+          }
+        }
+
+        // Create final json data array
+        let tempArray = [];
+        for (let i = 0; i < studentDetails.length; i++) {
+          const percentage = Math.ceil((tempAttendance[i] / totalDays) * 100);
+          tempArray.push({
+            Class_Roll: studentDetails[i].roll.toString(),
+            University_Roll: studentDetails[i].uniRoll.toString(),
+            Name: studentDetails[i].name,
+            Total: totalDays.toString(),
+            Present: tempAttendance[i].toString(),
+            Percentage: percentage.toString(),
+          });
+        }
+        return tempArray;
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleGenerateCustomReport = async () => {
+    try {
+      // const jsonData = getCustomClassDetails();
+      getCustomClassDetails();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <SafeAreaView>
       <Modal
@@ -171,9 +251,40 @@ const GenerateReportModal = props => {
                   handleGenerateReport();
                 }}
                 activeOpacity={0.6}
+                style={[
+                  styles.GenerateReportButton,
+                  {
+                    backgroundColor: COLORS.primaryLight,
+                  },
+                ]}>
+                {!showLoader && (
+                  <Text
+                    style={[
+                      styles.GenerateReportText,
+                      {color: COLORS.primaryDark},
+                    ]}>
+                    Entire
+                  </Text>
+                )}
+                {showLoader && (
+                  <ActivityIndicator
+                    size={26}
+                    color={COLORS.primaryLight}
+                    animating={showLoader}
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowLoader(true);
+                  handleGenerateCustomReport();
+                  // handleGenerateReport();
+                  // Custom date to be selected
+                }}
+                activeOpacity={0.6}
                 style={styles.GenerateReportButton}>
                 {!showLoader && (
-                  <Text style={styles.GenerateReportText}>Okay</Text>
+                  <Text style={styles.GenerateReportText}>Custom</Text>
                 )}
                 {showLoader && (
                   <ActivityIndicator
@@ -226,7 +337,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.space_20,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   GenerateReportButton: {
@@ -234,6 +345,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryDark,
     padding: SPACING.space_12,
     borderRadius: 50,
+    borderWidth: 1,
+    borderColor: COLORS.primaryDark,
   },
   GenerateReportText: {
     fontFamily: FONTFAMILY.poppins_medium,
