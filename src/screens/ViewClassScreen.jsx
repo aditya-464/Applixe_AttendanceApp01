@@ -35,6 +35,7 @@ const ViewClassScreen = props => {
   const [selectDateModalView, setSelectDateModalView] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshValue, setRefreshValue] = useState(0);
   const route = useRoute();
   const {refreshClassValue} = useSelector(state => state.refreshClassDetails);
   // const {isConnected} = useNetInfo();
@@ -79,6 +80,9 @@ const ViewClassScreen = props => {
   };
   const handleCloseGenerateReportModal = value => {
     setGenerateReportModalView(value);
+  };
+  const handleRefreshValue = () => {
+    setRefreshValue(prev => prev + 1);
   };
 
   // DeleteClassModalView Functions
@@ -259,6 +263,7 @@ const ViewClassScreen = props => {
         branch={route.params.branch}
         semester={route.params.semester}
         section={route.params.section}
+        refreshValue={refreshValue}
       />
       <DeleteClassModal
         handleCloseDeleteClassModal={handleCloseDeleteClassModal}
@@ -271,6 +276,7 @@ const ViewClassScreen = props => {
         selectDateModalView={selectDateModalView}
         studentsData={studentsData}
         id={route.params.id}
+        handleRefreshValue={handleRefreshValue}
       />
 
       {!showLoader && (

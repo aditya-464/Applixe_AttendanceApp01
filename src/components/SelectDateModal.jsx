@@ -23,8 +23,13 @@ import {useDispatch, useSelector} from 'react-redux';
 import {refreshTotalAttendanceFunc} from '../redux/refreshTotalAttendance';
 
 const SelectDateModal = props => {
-  const {handleCloseSelectDateModal, selectDateModalView, studentsData, id} =
-    props;
+  const {
+    handleCloseSelectDateModal,
+    selectDateModalView,
+    studentsData,
+    id,
+    handleRefreshValue,
+  } = props;
   const [date, setDate] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
@@ -63,7 +68,7 @@ const SelectDateModal = props => {
       setShowLoader(false);
       return false;
     } else {
-      if (date > 31 || date < 1 || month > 12 || month < 1) {
+      if (date > 31 || date < 1 || month > 12 || month < 1 || year <= 0) {
         setError('Enter Valid Date');
         setShowLoader(false);
         return false;
@@ -83,7 +88,7 @@ const SelectDateModal = props => {
 
   const submitAttendance = async () => {
     try {
-      const dateAsKey = '' + date + '-' + month + '-' + year;
+      const dateAsKey = '' + year + '-' + month + '-' + date;
       const isDateAsKeyValid = getDateAsKeyValidity(dateAsKey);
 
       if (isDateAsKeyValid && topic !== '') {
@@ -126,10 +131,11 @@ const SelectDateModal = props => {
                   setShowLoader(false);
                   setError(null);
                   setSuccess('Attendance Marked');
+                  handleRefreshValue();
                   setTimeout(() => {
                     handleCloseSelectDateModal(false);
                     clearDateValues();
-                  }, 1500);
+                  }, 500);
                 });
             });
         } else {
@@ -182,10 +188,11 @@ const SelectDateModal = props => {
                       setShowLoader(false);
                       setError(null);
                       setSuccess('Attendance Marked');
+                      handleRefreshValue();
                       setTimeout(() => {
                         handleCloseSelectDateModal(false);
                         clearDateValues();
-                      }, 1500);
+                      }, 500);
                     });
                 });
             } else {
@@ -228,10 +235,11 @@ const SelectDateModal = props => {
                     .then(() => {
                       setShowLoader(false);
                       setSuccess('Attendance Marked');
+                      handleRefreshValue();
                       setTimeout(() => {
                         handleCloseSelectDateModal(false);
                         clearDateValues();
-                      }, 1500);
+                      }, 500);
                     });
                 });
             }
@@ -456,7 +464,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   SelectDateText: {
-    fontFamily: FONTFAMILY.poppins_medium,
+    fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLight,
     textAlign: 'center',

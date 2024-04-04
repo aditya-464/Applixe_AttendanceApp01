@@ -46,7 +46,7 @@ const ViewRecordModal = props => {
       setShowLoader(false);
       return false;
     } else {
-      if (date > 31 || date < 1 || month > 12 || month < 1) {
+      if (date > 31 || date < 1 || month > 12 || month < 1 || year <= 0) {
         setError('Enter Valid Date');
         setShowLoader(false);
         return false;
@@ -58,7 +58,7 @@ const ViewRecordModal = props => {
   const handleViewRecord = async () => {
     try {
       setShowLoader(true);
-      const dateAsKey = '' + date + '-' + month + '-' + year;
+      const dateAsKey = '' + year + '-' + month + '-' + date;
       const isDateAsKeyValid = getDateAsKeyValidity(dateAsKey);
 
       if (isDateAsKeyValid) {
@@ -78,7 +78,7 @@ const ViewRecordModal = props => {
           if (attendanceBinaryArray && topic) {
             handleCloseViewRecordModal(false);
             handleMoveToViewRecordScreen({
-              dateAsKey,
+              dateAsKey: date + '-' + month + '-' + year,
               attendanceBinaryArray,
               topic,
             });
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   ViewRecordText: {
-    fontFamily: FONTFAMILY.poppins_medium,
+    fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLight,
     textAlign: 'center',
