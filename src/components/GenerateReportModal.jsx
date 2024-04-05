@@ -18,17 +18,19 @@ import {
   SPACING,
 } from '../themes/Theme';
 import {writeFile} from 'react-native-fs';
-import XLSX from 'xlsx';
+import XLSX, {stream} from 'xlsx';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 import firestore from '@react-native-firebase/firestore';
 import DeviceInfo from 'react-native-device-info';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GenerateReportModal = props => {
   const {
     handleCloseGenerateReportModal,
     generateReportModalView,
     id,
+    subject,
     initials,
     branch,
     semester,
@@ -47,6 +49,7 @@ const GenerateReportModal = props => {
   const [showDateInputs, setShowDateInputs] = useState(false);
   const [classDetails, setClassDetails] = useState(null);
   const [attendanceDetails, setAttendanceDetails] = useState(null);
+  const [blank, setBlank] = useState('');
 
   const handleClearInputs = () => {
     setDate('');
@@ -56,6 +59,78 @@ const GenerateReportModal = props => {
     setMonth2('');
     setYear2('');
   };
+
+  const getFileInfoData = async () => {
+    const userName = await AsyncStorage.getItem('name');
+    let temp = {};
+    if (userName) {
+      temp = {
+        Subject: '',
+        [subject]: '',
+        [blank]: '',
+        Stream: '',
+        [stream]: '',
+        [blank]: '',
+        Semester: '',
+        [semester]: '',
+        [blank]: '',
+        Section: '',
+        [section]: '',
+        [blank]: '',
+        Teacher: '',
+        [userName]: '',
+      };
+    }
+
+    return temp;
+  };
+
+  // const newFuncConvert = async () => {
+  //   try {
+  //     let temp = await getFileInfoData();
+  //     if (temp) {
+  //       const existingWorkbook = XLSX.readFile(
+  //         `/storage/emulated/0/Download/${filename}.xlsx`,
+  //       ); // Path to the existing Excel file
+
+  //       const existingWorksheet =
+  //         existingWorkbook.Sheets[existingWorkbook.SheetNames[0]]; // Assuming there's only one sheet
+  //       const existingData = XLSX.utils.sheet_to_json(existingWorksheet);
+
+  //       const combinedData = [temp, ...existingData]; // Combine data with temp object at the top
+
+  //       // Generate new workbook
+  //       var ws = XLSX.utils.json_to_sheet(combinedData);
+  //       var wb = XLSX.utils.book_new();
+  //       XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  //       const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
+
+  //       // Write new workbook to file
+  //       var filename = initials + '-' + branch + '-' + semester + '-' + section;
+  //       var newFilePath = `/storage/emulated/0/Download/${filename}.xlsx`;
+  //       await writeFile(newFilePath, wbout, 'ascii')
+  //         .then(() => {
+  //           setShowLoader(false);
+  //           setError(null);
+  //           setSuccess('Report Downloaded');
+  //           setTimeout(() => {
+  //             handleClearInputs();
+  //             setSuccess(null);
+  //             handleCloseGenerateReportModal(false);
+  //             setShowDateInputs(false);
+  //           }, 500);
+  //         })
+  //         .catch(error => {
+  //           setError(error.message);
+  //           setSuccess(null);
+  //           setShowDateInputs(false);
+  //         });
+  //     }
+  //   } catch (error) {
+  //     setError(error.message);
+  //     setShowDateInputs(false);
+  //   }
+  // };
 
   const getClassDetails = async id => {
     try {
@@ -87,6 +162,7 @@ const GenerateReportModal = props => {
   const handleGenerateReport = async () => {
     try {
       const jsonData = await getClassDetails(id);
+      // const fileInfoData = await getFileInfoData();
       if (jsonData) {
         // const granted = await PermissionsAndroid.request();
 

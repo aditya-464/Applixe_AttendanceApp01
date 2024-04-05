@@ -35,6 +35,7 @@ const FlatListItem = ({
     onPress={() =>
       navigation.navigate('ViewClassScreen', {
         id,
+        subject,
         initials,
         branch,
         semester,
