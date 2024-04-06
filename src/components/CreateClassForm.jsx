@@ -66,8 +66,8 @@ const CreateClassForm = props => {
         .doc(uid)
         .get();
 
-      if (getOldClassesArray && createClass) {
-        const tempArray = getOldClassesArray._data.classes;
+      if (getOldClassesArray.exists && createClass) {
+        const tempArray = getOldClassesArray.data().classes;
         tempArray.push({
           id: createClass.id,
           subject: subject,

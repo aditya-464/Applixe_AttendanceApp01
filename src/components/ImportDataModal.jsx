@@ -50,6 +50,7 @@ const ImportDataModal = props => {
               roll: data[i][0],
               uniRoll: data[i][1],
               name: data[i][2],
+              email: data[i][3],
               present: 0,
             });
           }

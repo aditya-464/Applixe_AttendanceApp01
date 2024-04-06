@@ -17,6 +17,7 @@ import DeleteNoteModal from '../components/DeleteNoteModal';
 import {useRoute} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
+import SendNoteModal from '../components/SendNoteModal';
 // import {useNetInfo} from '@react-native-community/netinfo';
 
 const ViewNoteScreen = props => {
@@ -26,10 +27,12 @@ const ViewNoteScreen = props => {
   const [titleBarHeight, setTitleBarHeight] = useState(null);
   const [modalView, setModalView] = useState(false);
   const [editNoteModalView, setEditNoteModalView] = useState(false);
+  const [sendNoteModalView, setSendNoteModalView] = useState(false);
   const [deleteNoteModalView, setDeleteNoteModalView] = useState(false);
   const {refreshNotesValue} = useSelector(state => state.refreshNotesDetails);
   const [showLoader, setShowLoader] = useState(true);
   const [error, setError] = useState(null);
+  const [classesDetails, setClassesDetails] = useState(null);
   const route = useRoute();
   const {uid} = useSelector(state => state.authDetails);
   // const {isConnected} = useNetInfo();
@@ -44,6 +47,14 @@ const ViewNoteScreen = props => {
   };
   const handleCloseEditNoteModalView = value => {
     setEditNoteModalView(value);
+  };
+
+  // SendNoteModalView Functions
+  const handleOpenSendNoteModalView = value => {
+    setSendNoteModalView(value);
+  };
+  const handleCloseSendNoteModalView = value => {
+    setSendNoteModalView(value);
   };
 
   // DeleteNoteModalView Functions
@@ -63,9 +74,9 @@ const ViewNoteScreen = props => {
     try {
       const noteDetails = await firestore().collection('Notes').doc(id).get();
       const userDetails = await firestore().collection('Users').doc(uid).get();
-      if (noteDetails._data.content && userDetails._data) {
-        setContent(noteDetails._data.content);
-        const notes = userDetails._data.notes;
+      if (noteDetails.data().content && userDetails.data()) {
+        setContent(noteDetails.data().content);
+        const notes = userDetails.data().notes;
         for (let i = 0; i < notes.length; i++) {
           if (notes[i].id === id) {
             setSubject(notes[i].subject);
@@ -81,9 +92,26 @@ const ViewNoteScreen = props => {
     }
   };
 
+  const getClassesDetails = async () => {
+    try {
+      const res = await firestore().collection('Users').doc(uid).get();
+      if (res.exists) {
+        setClassesDetails(res.data().classes);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   useEffect(() => {
     getNoteDetails(route.params?.id);
   }, [refreshNotesValue]);
+
+  useEffect(() => {
+    if (uid) {
+      getClassesDetails();
+    }
+  }, []);
 
   const handleMoveToNotesScreen = () => {
     navigation.navigate('NotesScreen');
@@ -126,12 +154,21 @@ const ViewNoteScreen = props => {
         modalView={modalView}
         handleOptionsModal={handleOptionsModal}
         handleOpenEditNoteModalView={handleOpenEditNoteModalView}
+        handleOpenSendNoteModalView={handleOpenSendNoteModalView}
         handleOpenDeleteNoteModalView={handleOpenDeleteNoteModalView}
       />
       <EditNoteModal
         handleCloseEditNoteModalView={handleCloseEditNoteModalView}
         editNoteModalView={editNoteModalView}
         id={route.params.id}
+      />
+      <SendNoteModal
+        handleCloseSendNoteModalView={handleCloseSendNoteModalView}
+        sendNoteModalView={sendNoteModalView}
+        id={route.params.id}
+        classesDetails={classesDetails}
+        subject={subject}
+        content={content}
       />
       <DeleteNoteModal
         handleCloseDeleteNoteModalView={handleCloseDeleteNoteModalView}
@@ -204,7 +241,7 @@ const styles = StyleSheet.create({
   },
   NoteSubject: {
     width: '100%',
-    padding: SPACING.space_12,
+    padding: SPACING.space_15,
     paddingBottom: SPACING.space_8,
   },
   NoteSubjectText: {
@@ -214,7 +251,7 @@ const styles = StyleSheet.create({
   },
   NoteContent: {
     width: '100%',
-    paddingHorizontal: SPACING.space_12,
+    paddingHorizontal: SPACING.space_15,
   },
   NoteContentText: {
     fontFamily: FONTFAMILY.poppins_medium,

@@ -15,6 +15,7 @@ const ViewNoteScreenOptionsModal = props => {
     modalView,
     handleOptionsModal,
     handleOpenEditNoteModalView,
+    handleOpenSendNoteModalView,
     handleOpenDeleteNoteModalView,
   } = props;
 
@@ -35,6 +36,15 @@ const ViewNoteScreenOptionsModal = props => {
           activeOpacity={0.4}
           style={styles.EditNote}>
           <Text style={styles.EditNoteText}>Edit Note</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            handleOpenSendNoteModalView(true);
+            handleOptionsModal();
+          }}
+          activeOpacity={0.4}
+          style={styles.EditNote}>
+          <Text style={styles.EditNoteText}>Send Note</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
