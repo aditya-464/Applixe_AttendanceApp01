@@ -41,28 +41,31 @@ const SendNoteModal = props => {
   const [rollValues, setRollValues] = useState('');
 
   const getRecipientsData = () => {
-    let temp = [];
-    for (let key in studentDetails) {
-      if (studentDetails.hasOwnProperty(key)) {
-        temp.push(studentDetails[key]);
+    if (studentDetails !== null) {
+      let temp = [];
+      for (let key in studentDetails) {
+        if (studentDetails.hasOwnProperty(key)) {
+          temp.push(studentDetails[key]);
+        }
       }
-    }
-    if (temp.length > 1) {
       let tempJoined = temp.join(',');
       return tempJoined;
-    } else {
-      return temp;
     }
   };
 
   const handleSendNoteEveryone = async () => {
     try {
       const recipientList = getRecipientsData();
-      const gmailUrl = `mailto:${recipientList}?subject=${encodeURIComponent(
-        subject,
-      )}&body=${encodeURIComponent(content)}`;
+      if (recipientList !== '') {
+        setError('');
+        const gmailUrl = `mailto:${recipientList}?subject=${encodeURIComponent(
+          subject,
+        )}&body=${encodeURIComponent(content)}`;
 
-      Linking.openURL(gmailUrl);
+        Linking.openURL(gmailUrl);
+      } else {
+        setError('Students data not available');
+      }
     } catch (error) {
       console.log(error);
     }
@@ -99,25 +102,29 @@ const SendNoteModal = props => {
   };
 
   const getCustomRecipientsData = () => {
-    let str = rollValues.trim();
-    str += ',';
-    let tempArr = [];
-    let tempStr = '';
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === ',') {
-        tempArr.push(tempStr);
-        tempStr = '';
-      } else {
-        tempStr += str[i];
+    if (studentDetails !== null) {
+      let str = rollValues.trim();
+      str += ',';
+      let tempArr = [];
+      let tempStr = '';
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === ',') {
+          tempArr.push(tempStr);
+          tempStr = '';
+        } else {
+          tempStr += str[i];
+        }
       }
-    }
-    let recipientArr = [];
-    for (let i = 0; i < tempArr.length; i++) {
-      if (studentDetails.hasOwnProperty(tempArr[i])) {
-        recipientArr.push(studentDetails[tempArr[i]]);
+      let recipientArr = [];
+      for (let i = 0; i < tempArr.length; i++) {
+        if (studentDetails.hasOwnProperty(tempArr[i])) {
+          recipientArr.push(studentDetails[tempArr[i]]);
+        }
       }
+
+      let recipientArrJoined = recipientArr.join(',');
+      return recipientArrJoined;
     }
-    return recipientArr;
   };
 
   const handleSendNoteCustom = async () => {
@@ -125,11 +132,18 @@ const SendNoteModal = props => {
       const check = isRollsValCorrect();
       if (check) {
         const customRecipientList = getCustomRecipientsData();
-        const gmailUrl = `mailto:${customRecipientList}?subject=${encodeURIComponent(
-          subject,
-        )}&body=${encodeURIComponent(content)}`;
+        if (customRecipientList !== '') {
+          setError('');
+          const gmailUrl = `mailto:${customRecipientList}?subject=${encodeURIComponent(
+            subject,
+          )}&body=${encodeURIComponent(content)}`;
 
-        Linking.openURL(gmailUrl);
+          Linking.openURL(gmailUrl);
+        } else {
+          setError('Students data not available');
+        }
+      } else {
+        setError('Enter rolls in correct format');
       }
     } catch (error) {
       console.log(error.message);
@@ -163,11 +177,16 @@ const SendNoteModal = props => {
       const res = await firestore().collection('Classes').doc(classValue).get();
       if (res.exists) {
         const tempStudentDetails = res.data().studentDetails;
-        let temp = {};
-        for (let i = 0; i < tempStudentDetails.length; i++) {
-          temp[tempStudentDetails[i].roll] = tempStudentDetails[i].email;
+        if (tempStudentDetails.length !== 0) {
+          let temp = {};
+          for (let i = 0; i < tempStudentDetails.length; i++) {
+            temp[tempStudentDetails[i].roll] = tempStudentDetails[i].email;
+          }
+          setStudentDetails(temp);
+          setError('');
+        } else {
+          setError('Students data not available');
         }
-        setStudentDetails(temp);
       }
     } catch (error) {
       console.log(error.message);
@@ -208,6 +227,9 @@ const SendNoteModal = props => {
                   setError('');
                   setSuccess('');
                   setShowLoader(false);
+                  setCustom(false);
+                  setClassValue('');
+                  setRollValues('');
                 }}>
                 <Ionicons
                   name="close"
@@ -320,7 +342,9 @@ const SendNoteModal = props => {
               )}
               {custom && (
                 <TouchableOpacity
-                  disabled={classValue === '' ? true : false}
+                  disabled={
+                    classValue === '' || rollValues === '' ? true : false
+                  }
                   onPress={() => {
                     Keyboard.dismiss();
                     handleSendNoteCustom();
@@ -437,19 +461,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   DummyText: {
-    marginTop: SPACING.space_10,
+    marginTop: SPACING.space_15,
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryLight,
   },
   ErrorText: {
-    marginTop: SPACING.space_10,
+    marginTop: SPACING.space_15,
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_14,
     color: COLORS.absent,
   },
   SuccessText: {
-    marginTop: SPACING.space_10,
+    marginTop: SPACING.space_15,
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_14,
     color: COLORS.present,

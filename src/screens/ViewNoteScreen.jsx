@@ -18,7 +18,6 @@ import {useRoute} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import SendNoteModal from '../components/SendNoteModal';
-// import {useNetInfo} from '@react-native-community/netinfo';
 
 const ViewNoteScreen = props => {
   const {navigation} = props;
@@ -35,7 +34,6 @@ const ViewNoteScreen = props => {
   const [classesDetails, setClassesDetails] = useState(null);
   const route = useRoute();
   const {uid} = useSelector(state => state.authDetails);
-  // const {isConnected} = useNetInfo();
 
   const handleOptionsModal = () => {
     setModalView(prev => !prev);
