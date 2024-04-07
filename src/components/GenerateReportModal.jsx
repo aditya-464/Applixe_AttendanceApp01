@@ -64,21 +64,32 @@ const GenerateReportModal = props => {
     const userName = await AsyncStorage.getItem('name');
     let temp = {};
     if (userName) {
+      // temp = {
+      //   Subject: '',
+      //   [subject]: '',
+      //   [blank]: '',
+      //   Stream: '',
+      //   [stream]: '',
+      //   [blank]: '',
+      //   Semester: '',
+      //   [semester]: '',
+      //   [blank]: '',
+      //   Section: '',
+      //   [section]: '',
+      //   [blank]: '',
+      //   Teacher: '',
+      //   [userName]: '',
+      // };
+
+      // const classInfo =
+      //   subject + '--' + branch + '--' + semester + '--' + section;
       temp = {
-        Subject: '',
-        [subject]: '',
-        [blank]: '',
-        Stream: '',
-        [stream]: '',
-        [blank]: '',
-        Semester: '',
-        [semester]: '',
-        [blank]: '',
-        Section: '',
-        [section]: '',
-        [blank]: '',
-        Teacher: '',
-        [userName]: '',
+        Subject: subject,
+        Branch: branch,
+        Semester: semester,
+        Section: section,
+        Teacher: userName,
+        Date: '05/05/2024',
       };
     }
 
@@ -139,18 +150,62 @@ const GenerateReportModal = props => {
         const totalDays = Object.keys(attendanceDetails).length;
         const studentDetails = classDetails.studentDetails;
         const totalAttendance = classDetails.totalAttendance;
-        for (let i = 0; i < studentDetails.length; i++) {
-          const percentage = Math.ceil((totalAttendance[i] / totalDays) * 100);
+        // for (let i = 0; i < studentDetails.length; i++) {
+        //   const percentage = Math.ceil((totalAttendance[i] / totalDays) * 100);
+        //   tempArray.push({
+        //     Class_Roll: studentDetails[i].roll.toString(),
+        //     University_Roll: studentDetails[i].uniRoll.toString(),
+        //     Name: studentDetails[i].name,
+        //     Total: totalDays.toString(),
+        //     Present: totalAttendance[i].toString(),
+        //     Percentage: percentage.toString(),
+        //   });
+        // }
+        // return tempArray;
+
+        // new code
+        const userName = await AsyncStorage.getItem('name');
+        if (userName) {
           tempArray.push({
-            Class_Roll: studentDetails[i].roll.toString(),
-            University_Roll: studentDetails[i].uniRoll.toString(),
-            Name: studentDetails[i].name,
-            Total: totalDays.toString(),
-            Present: totalAttendance[i].toString(),
-            Percentage: percentage.toString(),
+            Subject: subject,
+            Branch: branch,
+            Semester: semester,
+            Section: section,
+            Teacher: userName,
+            Time_Period: 'As of today',
           });
+          tempArray.push({
+            Subject: '',
+            Branch: '',
+            Semester: '',
+            Section: '',
+            Teacher: '',
+            Time_Period: '',
+          });
+          tempArray.push({
+            Subject: 'Class_Roll',
+            Branch: 'University_Roll',
+            Semester: 'Name',
+            Section: 'Total',
+            Teacher: 'Present',
+            Time_Period: 'Percentage',
+          });
+          for (let i = 0; i < studentDetails.length; i++) {
+            const percentage = Math.ceil(
+              (totalAttendance[i] / totalDays) * 100,
+            );
+            tempArray.push({
+              Subject: studentDetails[i].roll.toString(),
+              Branch: studentDetails[i].uniRoll.toString(),
+              Semester: studentDetails[i].name,
+              Section: totalDays.toString(),
+              Teacher: totalAttendance[i].toString(),
+              Time_Period: percentage.toString(),
+            });
+          }
+          return tempArray;
         }
-        return tempArray;
+        // new code
       }
     } catch (error) {
       setError(error.message);
@@ -162,9 +217,18 @@ const GenerateReportModal = props => {
   const handleGenerateReport = async () => {
     try {
       const jsonData = await getClassDetails(id);
-      // const fileInfoData = await getFileInfoData();
+      // const extraDetails = await getFileInfoData();
       if (jsonData) {
+        // new code
+        // const extraDetailsArray = Object.keys(extraDetails).map(key => ({
+        //   key,
+        //   value: extraDetails[key],
+        // }));
+        // const mergedData = [...extraDetailsArray, ...jsonData];
+
         // const granted = await PermissionsAndroid.request();
+
+        // new code
 
         let deviceVersion = DeviceInfo.getSystemVersion();
         let granted = PermissionsAndroid.RESULTS.DENIED;
@@ -206,6 +270,7 @@ const GenerateReportModal = props => {
         }
       }
     } catch (error) {
+      console.log(error);
       setError(error.message);
       setShowDateInputs(false);
     }
@@ -243,19 +308,67 @@ const GenerateReportModal = props => {
         }
 
         // Create final json data array
+        // let tempArray = [];
+        // for (let i = 0; i < studentDetails.length; i++) {
+        //   const percentage = Math.ceil((tempAttendance[i] / totalDays) * 100);
+        //   tempArray.push({
+        //     Class_Roll: studentDetails[i].roll.toString(),
+        //     University_Roll: studentDetails[i].uniRoll.toString(),
+        //     Name: studentDetails[i].name,
+        //     Total: totalDays.toString(),
+        //     Present: tempAttendance[i].toString(),
+        //     Percentage: percentage.toString(),
+        //   });
+        // }
+        // return tempArray;
+
+        // new code
+        const userName = await AsyncStorage.getItem('name');
         let tempArray = [];
-        for (let i = 0; i < studentDetails.length; i++) {
-          const percentage = Math.ceil((tempAttendance[i] / totalDays) * 100);
+        let fdate = date + '/' + month + '/' + year;
+        let tdate = date2 + '/' + month2 + '/' + year2;
+        let time_Period = fdate + '  -  ' + tdate;
+        if (userName) {
           tempArray.push({
-            Class_Roll: studentDetails[i].roll.toString(),
-            University_Roll: studentDetails[i].uniRoll.toString(),
-            Name: studentDetails[i].name,
-            Total: totalDays.toString(),
-            Present: tempAttendance[i].toString(),
-            Percentage: percentage.toString(),
+            Subject: subject,
+            Branch: branch,
+            Semester: semester,
+            Section: section,
+            Teacher: userName,
+            Time_Period: time_Period,
           });
+          tempArray.push({
+            Subject: '',
+            Branch: '',
+            Semester: '',
+            Section: '',
+            Teacher: '',
+            Time_Period: '',
+          });
+          tempArray.push({
+            Subject: 'Class_Roll',
+            Branch: 'University_Roll',
+            Semester: 'Name',
+            Section: 'Total',
+            Teacher: 'Present',
+            Time_Period: 'Percentage',
+          });
+          for (let i = 0; i < studentDetails.length; i++) {
+            const percentage = Math.ceil((tempAttendance[i] / totalDays) * 100);
+            tempArray.push({
+              Subject: studentDetails[i].roll.toString(),
+              Branch: studentDetails[i].uniRoll.toString(),
+              Semester: studentDetails[i].name,
+              Section: totalDays.toString(),
+              Teacher: tempAttendance[i].toString(),
+              Time_Period: percentage.toString(),
+            });
+          }
+          return tempArray;
         }
-        return tempArray;
+        // new code
+
+        // new code
       }
     } catch (error) {
       console.log(error.message);
