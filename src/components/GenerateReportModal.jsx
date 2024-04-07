@@ -60,111 +60,15 @@ const GenerateReportModal = props => {
     setYear2('');
   };
 
-  const getFileInfoData = async () => {
-    const userName = await AsyncStorage.getItem('name');
-    let temp = {};
-    if (userName) {
-      // temp = {
-      //   Subject: '',
-      //   [subject]: '',
-      //   [blank]: '',
-      //   Stream: '',
-      //   [stream]: '',
-      //   [blank]: '',
-      //   Semester: '',
-      //   [semester]: '',
-      //   [blank]: '',
-      //   Section: '',
-      //   [section]: '',
-      //   [blank]: '',
-      //   Teacher: '',
-      //   [userName]: '',
-      // };
-
-      // const classInfo =
-      //   subject + '--' + branch + '--' + semester + '--' + section;
-      temp = {
-        Subject: subject,
-        Branch: branch,
-        Semester: semester,
-        Section: section,
-        Teacher: userName,
-        Date: '05/05/2024',
-      };
-    }
-
-    return temp;
-  };
-
-  // const newFuncConvert = async () => {
-  //   try {
-  //     let temp = await getFileInfoData();
-  //     if (temp) {
-  //       const existingWorkbook = XLSX.readFile(
-  //         `/storage/emulated/0/Download/${filename}.xlsx`,
-  //       ); // Path to the existing Excel file
-
-  //       const existingWorksheet =
-  //         existingWorkbook.Sheets[existingWorkbook.SheetNames[0]]; // Assuming there's only one sheet
-  //       const existingData = XLSX.utils.sheet_to_json(existingWorksheet);
-
-  //       const combinedData = [temp, ...existingData]; // Combine data with temp object at the top
-
-  //       // Generate new workbook
-  //       var ws = XLSX.utils.json_to_sheet(combinedData);
-  //       var wb = XLSX.utils.book_new();
-  //       XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  //       const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
-
-  //       // Write new workbook to file
-  //       var filename = initials + '-' + branch + '-' + semester + '-' + section;
-  //       var newFilePath = `/storage/emulated/0/Download/${filename}.xlsx`;
-  //       await writeFile(newFilePath, wbout, 'ascii')
-  //         .then(() => {
-  //           setShowLoader(false);
-  //           setError(null);
-  //           setSuccess('Report Downloaded');
-  //           setTimeout(() => {
-  //             handleClearInputs();
-  //             setSuccess(null);
-  //             handleCloseGenerateReportModal(false);
-  //             setShowDateInputs(false);
-  //           }, 500);
-  //         })
-  //         .catch(error => {
-  //           setError(error.message);
-  //           setSuccess(null);
-  //           setShowDateInputs(false);
-  //         });
-  //     }
-  //   } catch (error) {
-  //     setError(error.message);
-  //     setShowDateInputs(false);
-  //   }
-  // };
-
   const getClassDetails = async id => {
     try {
       if (classDetails !== null && attendanceDetails !== null) {
+        const userName = await AsyncStorage.getItem('name');
         let tempArray = [];
         const totalDays = Object.keys(attendanceDetails).length;
         const studentDetails = classDetails.studentDetails;
         const totalAttendance = classDetails.totalAttendance;
-        // for (let i = 0; i < studentDetails.length; i++) {
-        //   const percentage = Math.ceil((totalAttendance[i] / totalDays) * 100);
-        //   tempArray.push({
-        //     Class_Roll: studentDetails[i].roll.toString(),
-        //     University_Roll: studentDetails[i].uniRoll.toString(),
-        //     Name: studentDetails[i].name,
-        //     Total: totalDays.toString(),
-        //     Present: totalAttendance[i].toString(),
-        //     Percentage: percentage.toString(),
-        //   });
-        // }
-        // return tempArray;
-
         // new code
-        const userName = await AsyncStorage.getItem('name');
         if (userName) {
           tempArray.push({
             Subject: subject,
@@ -217,18 +121,8 @@ const GenerateReportModal = props => {
   const handleGenerateReport = async () => {
     try {
       const jsonData = await getClassDetails(id);
-      // const extraDetails = await getFileInfoData();
       if (jsonData) {
-        // new code
-        // const extraDetailsArray = Object.keys(extraDetails).map(key => ({
-        //   key,
-        //   value: extraDetails[key],
-        // }));
-        // const mergedData = [...extraDetailsArray, ...jsonData];
-
         // const granted = await PermissionsAndroid.request();
-
-        // new code
 
         let deviceVersion = DeviceInfo.getSystemVersion();
         let granted = PermissionsAndroid.RESULTS.DENIED;
@@ -246,7 +140,14 @@ const GenerateReportModal = props => {
           XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
           const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
           var filename =
-            initials + '-' + branch + '-' + semester + '-' + section;
+            initials +
+            ' - ' +
+            branch +
+            ' - ' +
+            semester +
+            ' - ' +
+            section +
+            ' - Entire';
           var file = `/storage/emulated/0/Download/${filename}.xlsx`;
           await writeFile(file, wbout, 'ascii')
             .then(() => {
@@ -287,6 +188,7 @@ const GenerateReportModal = props => {
   const getCustomClassDetails = async (fromDateKey, toDateKey) => {
     try {
       if (classDetails !== null && attendanceDetails !== null) {
+        const userName = await AsyncStorage.getItem('name');
         let tempAttendance = [];
         const studentDetails = classDetails.studentDetails;
         for (let i = 0; i < studentDetails.length; i++) {
@@ -307,23 +209,7 @@ const GenerateReportModal = props => {
           }
         }
 
-        // Create final json data array
-        // let tempArray = [];
-        // for (let i = 0; i < studentDetails.length; i++) {
-        //   const percentage = Math.ceil((tempAttendance[i] / totalDays) * 100);
-        //   tempArray.push({
-        //     Class_Roll: studentDetails[i].roll.toString(),
-        //     University_Roll: studentDetails[i].uniRoll.toString(),
-        //     Name: studentDetails[i].name,
-        //     Total: totalDays.toString(),
-        //     Present: tempAttendance[i].toString(),
-        //     Percentage: percentage.toString(),
-        //   });
-        // }
-        // return tempArray;
-
         // new code
-        const userName = await AsyncStorage.getItem('name');
         let tempArray = [];
         let fdate = date + '/' + month + '/' + year;
         let tdate = date2 + '/' + month2 + '/' + year2;
@@ -366,8 +252,6 @@ const GenerateReportModal = props => {
           }
           return tempArray;
         }
-        // new code
-
         // new code
       }
     } catch (error) {
@@ -429,7 +313,14 @@ const GenerateReportModal = props => {
             XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
             const wbout = XLSX.write(wb, {type: 'binary', bookType: 'xlsx'});
             var filename =
-              initials + '-' + branch + '-' + semester + '-' + section;
+              initials +
+              ' - ' +
+              branch +
+              ' - ' +
+              semester +
+              ' - ' +
+              section +
+              ' - Custom';
             var file = `/storage/emulated/0/Download/${filename}.xlsx`;
             await writeFile(file, wbout, 'ascii')
               .then(() => {
